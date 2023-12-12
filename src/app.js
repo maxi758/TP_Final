@@ -3,7 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
+const HttpError = require('./models/http-error');
+
 const especialidadRoutes = require('./routes/especialidad-route');
+const medicoRoutes = require('./routes/medico-route');
 
 dotenv.config();
 
@@ -15,6 +18,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/especialidades', especialidadRoutes);
+
+app.use('/api/medicos', medicoRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route', 404);

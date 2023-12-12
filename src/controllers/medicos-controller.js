@@ -67,7 +67,7 @@ const updateMedico = async (req, res, next) => {
   const propertiesToUpdate = req.body;
   let medico;
   try {
-    medico = Medico.findByIdAndUpdate(id, propertiesToUpdate, { new: true });
+    medico = await Medico.findByIdAndUpdate(id, propertiesToUpdate, { new: true });
   } catch (err) {
     const error = new HttpError(
       'No se pudieron actualizar los datos del médico, intente de nuevo más tarde',
