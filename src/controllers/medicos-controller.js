@@ -1,3 +1,4 @@
+const especialidad = require('../models/especialidad');
 const HttpError = require('../models/http-error');
 
 const Medico = require('../models/medico');
@@ -43,12 +44,36 @@ const getMedicoById = async (req, res, next) => {
 };
 //Admin
 const createMedico = async (req, res, next) => {
+  console.log(req.body);
   const medico = new Medico({
     ...req.body,
   });
-
+  console.log(medico);
   try {
+    const existingEspecialidad = await especialidad.findById(
+      medico.especialidad
+    );
+
+    if (!existingEspecialidad) {
+      const error = new HttpError('No existe la especialidad ingresada', 422);
+      return next(error);
+    }
+    if (await Medico.findOne({ matricula: medico.matricula })) {
+      const error = new HttpError(
+        'Ya existe un médico con la matrícula ingresada',
+        422
+      );
+      return next(error);
+    }
+
+    const session = await Medico.startSession(); // Transaccion
+    session.startTransaction();
+    existingEspecialidad.medicos.push(medico);
+    await existingEspecialidad.save();
     await medico.save();
+    await session.commitTransaction();
+    session.endSession();
+
   } catch (err) {
     const error = new HttpError(
       'No se pudo crear el médico, intente de nuevo más tarde',
@@ -66,8 +91,11 @@ const updateMedico = async (req, res, next) => {
   const { id } = req.params;
   const propertiesToUpdate = req.body;
   let medico;
+  console.log(propertiesToUpdate);
   try {
-    medico = await Medico.findByIdAndUpdate(id, propertiesToUpdate, { new: true });
+    medico = await Medico.findByIdAndUpdate(id, propertiesToUpdate, {
+      new: true,
+    });
   } catch (err) {
     const error = new HttpError(
       'No se pudieron actualizar los datos del médico, intente de nuevo más tarde',
