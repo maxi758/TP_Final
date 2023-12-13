@@ -1,6 +1,8 @@
 const HttpError = require('../models/http-error');
+const { EstadoTurno } = require('../utils/constantes');
 
 const Turno = require('../models/turno');
+const Medico = require('../models/medico');
 
 const getTurnos = async (req, res, next) => {
   let turnos;
@@ -25,12 +27,37 @@ const getTurnos = async (req, res, next) => {
 
 const getTurnoById = async (req, res, next) => {};
 
-const getTurnosByMedicoId = async (req, res, next) => {};
+const getTurnosByMedicoId = async (req, res, next) => {
+  const {id} = req.params;
+  let turnos;
+  try {
+    const medico = await Medico.findById(id);
+    if (!medico) {
+      const error = new HttpError('No existe un medico con el id ingresado', 422);
+      return next(error);
+    }
+    turnos = await Turno.find({medico: id});
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+  res.json({turnos});
+};
 
 const getTurnosByPacienteId = async (req, res, next) => {};
 
 // Debería poder ser creado sin paciente asignado o con paciente asignado, eso varía el estado
 const createTurno = async (req, res, next) => {
+  if (req.body.paciente) {
+    req.body.estado = EstadoTurno.ASIGNADO;
+  } else {
+    req.body.estado = EstadoTurno.DISPONIBLE;
+  }
+
+  console.log(req.body);
   const turno = new Turno({
     ...req.body,
   });
@@ -48,7 +75,7 @@ const createTurno = async (req, res, next) => {
   res.status(201).json({ turno: turno.toObject({ getters: true }) });
 };
 
-// Cambia el estado del turno, puede ser 
+// Cambia el estado del turno, puede ser
 const updateTurno = async (req, res, next) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -84,17 +111,17 @@ const updateTurno = async (req, res, next) => {
 
 // Podría implementar cascada
 const deleteTurno = async (req, res, next) => {
-    const { id } = req.params;
-    let turno;
-    try {
-        turno = await Turno.findByIdAndDelete(id);
-    } catch (err) {
-        const error = new HttpError(
-        'Error en la consulta, intente de nuevo más tarde',
-        500
-        );
-    }   
-    res.status(200).json({ message: 'Turno eliminado' });
+  const { id } = req.params;
+  let turno;
+  try {
+    turno = await Turno.findByIdAndDelete(id);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+  }
+  res.status(200).json({ message: 'Turno eliminado' });
 };
 
 module.exports = {

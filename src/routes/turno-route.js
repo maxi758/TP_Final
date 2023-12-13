@@ -5,6 +5,7 @@ const router = express.Router();
 const {
     getTurnos,
     getTurnoById,
+    getTurnosByMedicoId,
     createTurno,
     updateTurno,
     deleteTurno
@@ -13,6 +14,8 @@ const {
 router.get('/', getTurnos);
 
 router.get('/:id', getTurnoById);
+
+router.get('/medicos/:id', getTurnosByMedicoId);
 
 router.post('/', createTurno);
 

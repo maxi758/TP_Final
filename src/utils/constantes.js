@@ -1,10 +1,15 @@
 const EstadoTurno = {
     DISPONIBLE: 'DISPONIBLE',
-    OCUPADO: 'OCUPADO',
+    ASIGNADO: 'ASIGNADO',
     CANCELADO: 'CANCELADO'
 }
 
 const Rol = {
     ADMIN: 'ADMIN',
     PACIENTE: 'PACIENTE'
+}
+
+module.exports = {
+    EstadoTurno,
+    Rol
 }
