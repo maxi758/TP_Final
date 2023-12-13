@@ -37,6 +37,7 @@ const createUsuario = async (req, res) => {
       'Error en la consulta, intente de nuevo más tarde',
       500
     );
+    return next(error);
   }
 };
 
@@ -54,6 +55,7 @@ const login = async (req, res) => {
       'Error en la consulta, intente de nuevo más tarde',
       500
     );
+    return next(error);
   }
 };
 
