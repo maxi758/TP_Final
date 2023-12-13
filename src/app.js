@@ -7,6 +7,7 @@ const HttpError = require('./models/http-error');
 
 const especialidadRoutes = require('./routes/especialidad-route');
 const medicoRoutes = require('./routes/medico-route');
+const turnoRoutes = require('./routes/turno-route');
 
 dotenv.config();
 
@@ -20,6 +21,8 @@ app.get('/', (req, res) => {
 app.use('/api/especialidades', especialidadRoutes);
 
 app.use('/api/medicos', medicoRoutes);
+
+app.use('/api/turnos', turnoRoutes);
 
 app.use((req, res, next) => {
   const error = new HttpError('Could not find this route', 404);
