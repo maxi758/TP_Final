@@ -73,7 +73,6 @@ const createMedico = async (req, res, next) => {
     await medico.save();
     await session.commitTransaction();
     session.endSession();
-
   } catch (err) {
     const error = new HttpError(
       'No se pudo crear el médico, intente de nuevo más tarde',
@@ -92,7 +91,18 @@ const updateMedico = async (req, res, next) => {
   const propertiesToUpdate = req.body;
   let medico;
   console.log(propertiesToUpdate);
+
   try {
+    if (propertiesToUpdate.especialidad) {
+      const existingEspecialidad = await especialidad.findById(
+        propertiesToUpdate.especialidad
+      );
+      if (!existingEspecialidad) {
+        const error = new HttpError('No existe la especialidad ingresada', 422);
+        return next(error);
+      }
+    }
+
     medico = await Medico.findByIdAndUpdate(id, propertiesToUpdate, {
       new: true,
     });
