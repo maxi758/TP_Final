@@ -1,55 +1,71 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const Schema = mongoose.Schema;
 
-const usuarioSchema = new Schema({
-  nombre: { type: String, required: true },
-  apellido: { type: String, required: true },
-  dni: { type: String, required: true },
-  email: { type: String, required: true },
-  password: { type: String, required: true },
-  rol: { type: String, required: true },
-  turnos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Turno' }],
-});
+const usuarioSchema = new Schema(
+  {
+    nombre: { type: String, required: true },
+    apellido: { type: String, required: true },
+    dni: { type: String, required: true },
+    email: { type: String, required: true },
+    password: { type: String, required: true },
+    rol: { type: String, required: true },
+    turnos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Turno' }],
+    tokens: [
+      // array of objects
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 usuarioSchema.methods.generateAuthToken = async function () {
-  const user = this;
+  const usuario = this;
 
-  const token = jwt.sign({ _id: user._id.toString() }, 'mysecret', {
+  const token = jwt.sign({ _id: usuario._id.toString() }, 'mysecret', {
     expiresIn: '360 minutes',
   });
 
-  user.tokens = user.tokens.concat({ token }); // add token to user's tokens array
+  usuario.tokens = usuario.tokens.concat({ token }); // add token to user's tokens array
 
-  await user.save();
+  await usuario.save();
 
   return token;
 };
 
 usuarioSchema.statics.findByCredentials = async (email, password) => {
   // statics are accessible on the model
-  const user = await User.findOne({ email });
+  const usuario = await Usuario.findOne({ email });
 
-  if (!user) {
+  if (!usuario) {
     throw new Error('Unable to login');
   }
 
-  const isMatch = await bcrypt.compare(password, user.password); // compare plain text password to hashed password
+  const isMatch = await bcrypt.compare(password, usuario.password); // compare plain text password to hashed password
   // console.log(isMatch)
 
   if (!isMatch) {
     throw new Error('Unable to login');
   }
 
-  return user;
+  return usuario;
 };
 
 usuarioSchema.pre('save', async function (next) {
-  const user = this;
+  const usuario = this;
 
-  if (user.isModified('password')) {
+  if (usuario.isModified('password')) {
     // true if password is being modified
-    user.password = await bcrypt.hash(user.password, 8);
+    usuario.password = await bcrypt.hash(usuario.password, 8);
   }
 
   // console.log('just before saving!')
@@ -57,5 +73,6 @@ usuarioSchema.pre('save', async function (next) {
   next();
 });
 
+const Usuario = mongoose.model('Usuario', usuarioSchema);
 
-module.exports = mongoose.model('Usuario', usuarioSchema);
+module.exports = Usuario;
