@@ -24,14 +24,36 @@ const getUsuarios = async (req, res, next) => {
 };
 
 const createUsuario = async (req, res, next) => {
+  const { email } = req.body;
+
+  let existingUsuario;
+
+  try {
+    existingUsuario = await Usuario.findOne({ email: email });
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  if (existingUsuario) {
+    const error = new HttpError(
+      'El email ingresado ya se encuentra registrado en el sistema',
+      422
+    );
+    return next(error);
+  }
+
   const usuario = new Usuario({ ...req.body });
 
   console.log(usuario);
   try {
     await usuario.save();
     //sendWelcomeEmail(usuario.email, usuario.name); // send welcome email
-    const token = await usuario.generateAuthToken();
-    res.status(201).send({ usuario, token }); // send back user and token
+    //const token = await usuario.generateAuthToken();
+    res.status(201).json({ usuario });
   } catch (err) {
     console.log(err);
     const error = new HttpError(

@@ -28,10 +28,22 @@ const usuarioSchema = new Schema(
   }
 );
 
+// Para que no se envíen password y tokens en la respuesta, salvo que uno los agregue en el response
+usuarioSchema.methods.toJSON = function () {
+  const usuario = this;
+  const usuarioObjeto = usuario.toObject();
+
+  delete usuarioObjeto.password;
+  delete usuarioObjeto.tokens;
+
+  return usuarioObjeto;
+};
+
+
 usuarioSchema.methods.generateAuthToken = async function () {
   const usuario = this;
 
-  const token = jwt.sign({ _id: usuario._id.toString() }, 'mysecret', {
+  const token = jwt.sign({ _id: usuario._id.toString(), rol: usuario.rol }, 'mysecret', {
     expiresIn: '360 minutes',
   });
 
