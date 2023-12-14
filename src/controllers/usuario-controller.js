@@ -1,6 +1,6 @@
 const HttpError = require('../models/http-error');
-
 const Usuario = require('../models/usuario');
+const { Rol } = require('../utils/constantes');
 
 const getUsuarios = async (req, res, next) => {
   let usuarios;
@@ -18,9 +18,7 @@ const getUsuarios = async (req, res, next) => {
     return next(new HttpError('No se encontraron usuarios', 404));
   }
 
-  res.json({
-    usuarios: usuarios.map((usuario) => usuario.toObject({ getters: true })),
-  });
+  res.json({ usuarios });
 };
 
 const createUsuario = async (req, res, next) => {

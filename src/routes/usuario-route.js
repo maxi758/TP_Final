@@ -7,8 +7,9 @@ const {
   createUsuario,
   login,
 } = require('../controllers/usuario-controller');
+const auth = require('../middleware/auth');
 
-router.get('/', getUsuarios);
+router.get('/', (req, res, next) => auth('ADMIN', req, res, next) , getUsuarios);
 
 router.post('/', createUsuario);
 

@@ -1,23 +1,35 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/user');
+const Usuario = require('../models/usuario');
+const HttpError = require('../models/http-error');
 
-const auth = async (req, res, next) => {
+const auth = async (rol = 'PACIENTE', req, res, next) => {
   try {
+    if (!req.header('Authorization')) {
+      return next(new HttpError('Token faltante', 401));
+    }
+
+    console.log(rol);
     const token = req.header('Authorization').replace('Bearer ', ''); // remove 'Bearer ' from token string
-    const decoded = jwt.verify(token, 'thisismynewcourse'); // decode token
-    const user = await User.findOne({
+    const decoded = jwt.verify(token, 'mysecret'); // decode token
+    const usuario = await Usuario.findOne({
       _id: decoded._id,
       'tokens.token': token,
-    }); // find user with correct id who has that authentication token still stored
-    // console.log(user)
-    if (!user) {
-      throw new Error();
+    });
+    if (!usuario) {
+      return next(new HttpError('Inicie sesión', 401));
     }
     req.token = token; // store token on request object
-    req.user = user; // store user on request object
+    req.usuario = usuario; // store user on request object
+
+    if (rol !== usuario.rol || usuario.rol !== 'ADMIN') {
+      return next(
+        new HttpError('No tiene permisos para realizar esta acción', 403)
+      );
+    }
     next();
   } catch (e) {
-    res.status(401).send({ error: 'Please authenticate.' });
+    console.log(e);
+    return next(new HttpError('Error de autenticación', 401));
   }
 };
 
