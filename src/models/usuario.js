@@ -8,8 +8,8 @@ const usuarioSchema = new Schema(
   {
     nombre: { type: String, required: true },
     apellido: { type: String, required: true },
-    dni: { type: String, required: true },
-    email: { type: String, required: true },
+    //dni: { type: String, required: true },
+    email: { type: String, unique:true, required: true },
     password: { type: String, required: true },
     rol: { type: String, required: true },
     turnos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Turno' }],
@@ -35,7 +35,7 @@ usuarioSchema.methods.generateAuthToken = async function () {
     expiresIn: '360 minutes',
   });
 
-  usuario.tokens = usuario.tokens.concat({ token }); // add token to user's tokens array
+  usuario.tokens = usuario.tokens.concat({ token }); 
 
   await usuario.save();
 
@@ -43,18 +43,17 @@ usuarioSchema.methods.generateAuthToken = async function () {
 };
 
 usuarioSchema.statics.findByCredentials = async (email, password) => {
-  // statics are accessible on the model
+  // statics son métodos que se pueden llamar directamente sobre el modelo, sin necesidad de instanciarlo
   const usuario = await Usuario.findOne({ email });
 
   if (!usuario) {
-    throw new Error('Unable to login');
+    throw new Error('Error al iniciar sesión');
   }
 
-  const isMatch = await bcrypt.compare(password, usuario.password); // compare plain text password to hashed password
-  // console.log(isMatch)
+  const isMatch = await bcrypt.compare(password, usuario.password); 
 
   if (!isMatch) {
-    throw new Error('Unable to login');
+    throw new Error('Error al iniciar sesión');
   }
 
   return usuario;

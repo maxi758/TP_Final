@@ -24,7 +24,7 @@ const getUsuarios = async (req, res, next) => {
 };
 
 const createUsuario = async (req, res, next) => {
-  const usuario = new Usuario(req.body);
+  const usuario = new Usuario({ ...req.body });
 
   console.log(usuario);
   try {
@@ -53,7 +53,7 @@ const login = async (req, res, next) => {
     res.send({ usuario, token });
   } catch (err) {
     const error = new HttpError(
-      'Error en la consulta, intente de nuevo más tarde',
+      err.message || 'Error en la consulta, intente de nuevo más tarde',
       500
     );
     return next(error);
