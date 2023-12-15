@@ -51,7 +51,28 @@ const getTurnosByMedicoId = async (req, res, next) => {
   res.json({ turnos });
 };
 
-const getTurnosByPacienteId = async (req, res, next) => {};
+const getTurnosByPacienteId = async (req, res, next) => {
+  const { id } = req.params;
+  let turnos;
+  try {
+    const paciente = await Usuario.findById(id);
+    if (!paciente) {
+      const error = new HttpError(
+        'No existe un medico con el id ingresado',
+        422
+      );
+      return next(error);
+    }
+    turnos = await Turno.find({ usuario: id });
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+  res.json({ turnos });
+};
 
 // Debería poder ser creado sin paciente asignado o con paciente asignado, eso varía el estado
 const createTurno = async (req, res, next) => {
@@ -74,7 +95,7 @@ const createTurno = async (req, res, next) => {
     );
     return next(error);
   }
-  
+
   if (req.body.paciente) {
     try {
       usuario = await Usuario.findById(req.body.paciente);
@@ -154,6 +175,51 @@ const updateTurno = async (req, res, next) => {
   res.status(200).json({ turno: turno.toObject({ getters: true }) });
 };
 
+const cancelTurno = async (req, res, next) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  let turno;
+  try {
+    turno = await Turno.findById(id);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  if (!turno) {
+    return next(new HttpError('No se encontró un turno para el id dado', 404));
+  }
+
+  console.log(turno.usuario);
+  console.log(req.usuario._id);
+  console.log(req.usuario.rol)
+  console.log(turno.usuario.equals(req.usuario._id));
+  if (!turno.usuario.equals(req.usuario._id) && req.usuario.rol !== 'ADMIN') {
+    const error = new HttpError(
+      'No tiene permisos para cancelar este turno',
+      403
+    );
+    return next(error);
+  }
+
+  turno.estado = EstadoTurno.CANCELADO;
+
+  try {
+    await turno.save();
+  } catch (err) {
+    const error = new HttpError(
+      'No se pudo actualizar el turno, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ turno: turno.toObject({ getters: true }) });
+};
+
 // Podría implementar cascada
 const deleteTurno = async (req, res, next) => {
   const { id } = req.params;
@@ -176,5 +242,6 @@ module.exports = {
   getTurnosByPacienteId,
   createTurno,
   updateTurno,
+  cancelTurno,
   deleteTurno,
 };
