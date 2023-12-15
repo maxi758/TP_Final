@@ -3,6 +3,7 @@ const { EstadoTurno } = require('../utils/constantes');
 
 const Turno = require('../models/turno');
 const Medico = require('../models/medico');
+const Usuario = require('../models/usuario');
 
 const getTurnos = async (req, res, next) => {
   let turnos;
@@ -28,15 +29,18 @@ const getTurnos = async (req, res, next) => {
 const getTurnoById = async (req, res, next) => {};
 
 const getTurnosByMedicoId = async (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
   let turnos;
   try {
     const medico = await Medico.findById(id);
     if (!medico) {
-      const error = new HttpError('No existe un medico con el id ingresado', 422);
+      const error = new HttpError(
+        'No existe un medico con el id ingresado',
+        422
+      );
       return next(error);
     }
-    turnos = await Turno.find({medico: id});
+    turnos = await Turno.find({ medico: id });
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -44,27 +48,68 @@ const getTurnosByMedicoId = async (req, res, next) => {
     );
     return next(error);
   }
-  res.json({turnos});
+  res.json({ turnos });
 };
 
 const getTurnosByPacienteId = async (req, res, next) => {};
 
 // Debería poder ser creado sin paciente asignado o con paciente asignado, eso varía el estado
 const createTurno = async (req, res, next) => {
+  const { fecha, medico, observaciones } = req.body;
+  let estado, usuario;
+  try {
+    const medico = await Medico.findById(medico);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  if (!medico) {
+    const error = new HttpError(
+      'No existe un medico con el id ingresado',
+      422
+    );
+    return next(error);
+  }
+  
   if (req.body.paciente) {
-    req.body.estado = EstadoTurno.ASIGNADO;
+    try {
+      usuario = await Usuario.findById(req.body.paciente);
+    } catch (err) {
+      const error = new HttpError(
+        'Error en la consulta, intente de nuevo más tarde',
+        500
+      );
+      return next(error);
+    }
+    if (!usuario) {
+      const error = new HttpError(
+        'No existe un usuario con el id ingresado',
+        422
+      );
+      return next(error);
+    }
+    estado = EstadoTurno.ASIGNADO;
   } else {
-    req.body.estado = EstadoTurno.DISPONIBLE;
+    estado = EstadoTurno.DISPONIBLE;
   }
 
   console.log(req.body);
   const turno = new Turno({
-    ...req.body,
+    fecha,
+    medico,
+    usuario: req.body.paciente,
+    observaciones,
+    estado,
   });
 
   try {
     await turno.save();
   } catch (err) {
+    console.log(err);
     const error = new HttpError(
       'No se pudo crear el turno, intente de nuevo más tarde',
       500

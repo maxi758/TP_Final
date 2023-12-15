@@ -10,6 +10,7 @@ const {
     updateTurno,
     deleteTurno
     } = require('../controllers/turnos-controller');
+const auth = require('../middleware/auth');
 
 router.get('/', getTurnos);
 
@@ -17,10 +18,10 @@ router.get('/:id', getTurnoById);
 
 router.get('/medicos/:id', getTurnosByMedicoId);
 
-router.post('/', createTurno);
+router.post('/', (req, res, next) => auth('ADMIN', res, req, next) ,createTurno);
 
-router.patch('/:id', updateTurno);
+router.patch('/:id', (req, res, next) => auth('ADMIN', res, req, next), updateTurno);
 
-router.delete('/:id', deleteTurno);
+router.delete('/:id', (req, res, next) => auth('ADMIN', res, req, next), deleteTurno);
 
 module.exports = router;
