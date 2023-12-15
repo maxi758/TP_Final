@@ -16,7 +16,7 @@ router.get('/', getTurnos);
 
 router.get('/:id', getTurnoById);
 
-router.get('/medicos/:id', getTurnosByMedicoId);
+router.get('/medicos/:id', (req, res, next) => auth('ADMIN', res, req, next), getTurnosByMedicoId);
 
 router.post('/', (req, res, next) => auth('ADMIN', res, req, next) ,createTurno);
 
