@@ -4,6 +4,7 @@ const { EstadoTurno } = require('../utils/constantes');
 const Turno = require('../models/turno');
 const Medico = require('../models/medico');
 const Usuario = require('../models/usuario');
+const { default: mongoose } = require('mongoose');
 
 const getTurnos = async (req, res, next) => {
   let turnos;
@@ -77,13 +78,27 @@ const getTurnosByPacienteId = async (req, res, next) => {
 // Debería poder ser creado sin paciente asignado o con paciente asignado, eso varía el estado
 const createTurno = async (req, res, next) => {
   const { fecha, medico, observaciones } = req.body;
-  let estado, usuario, medicoFound;
+  let estado, usuario, medicoFound, existingTurnos, fechaAnterior, fechaPosterior, fechaActual;
+  fechaActual = new Date(fecha);
+  fechaAnterior = new Date(fecha);
+  fechaAnterior.setMinutes(fechaAnterior.getMinutes() - 14);
+  fechaPosterior = new Date(fecha);
+  fechaPosterior.setMinutes(fechaPosterior.getMinutes() + 14);
   try {
     medicoFound = await Medico.findById(medico);
+    existingTurnos = await Turno.find({ medico, fecha:{ $gte: fechaAnterior, $lte: fechaPosterior } });
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
       500
+    );
+    return next(error);
+  }
+
+  if (existingTurnos.length > 0) {
+    const error = new HttpError(
+      'Ya existe un turno para el médico y fecha ingresados',
+      422
     );
     return next(error);
   }
@@ -125,7 +140,17 @@ const createTurno = async (req, res, next) => {
   });
 
   try {
+    const session = await Turno.startSession();
+    session.startTransaction();
     await turno.save();
+    medicoFound.turnos.push(turno);
+    await medicoFound.save();
+    if (usuario) {
+      usuario.turnos.push(turno);
+      await usuario.save();
+    }
+    await session.commitTransaction();
+    session.endSession();
   } catch (err) {
     console.log(err);
     const error = new HttpError(
@@ -199,7 +224,13 @@ const asignTurno = async (req, res, next) => {
   turno.estado = EstadoTurno.ASIGNADO;
 
   try {  
+    const session = await Turno.startSession();
+    session.startTransaction();
     await turno.save();  
+    paciente.turnos.push(turno);
+    await paciente.save();
+    await session.commitTransaction();
+    session.endSession();
   } catch (err) {
     const error = new HttpError(
       'No se pudo actualizar el turno, intente de nuevo más tarde',
@@ -239,7 +270,13 @@ const cancelTurno = async (req, res, next) => {
   turno.estado = EstadoTurno.CANCELADO;
 
   try {
+    const session = await Turno.startSession();
+    session.startTransaction();
     await turno.save();
+    turno.usuario.turnos.pull(turno);
+    await turno.usuario.save();
+    await session.commitTransaction();
+    session.endSession();
 
   } catch (err) {
     const error = new HttpError(
@@ -280,6 +317,7 @@ const deleteTurno = async (req, res, next) => {
       'Error en la consulta, intente de nuevo más tarde',
       500
     );
+    next(error);
   }
   res.status(200).json({ message: 'Turno eliminado' });
 };

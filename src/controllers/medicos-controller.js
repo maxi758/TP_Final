@@ -6,7 +6,7 @@ const Medico = require('../models/medico');
 const getMedicos = async (req, res, next) => {
   let medicos;
   try {
-    medicos = await Medico.find().populate('especialidad');
+    medicos = await Medico.find().populate(['turnos', 'especialidad']);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
