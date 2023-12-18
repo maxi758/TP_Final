@@ -32,7 +32,7 @@ const getMedicoById = async (req, res, next) => {
   const { id } = req.params;
   let medico;
   try {
-    medico = await Medico.findById(id);
+    medico = await Medico.findById(id).populate({path: 'turnos', match: {estado: 'DISPONIBLE'}});
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
