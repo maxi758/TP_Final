@@ -10,4 +10,6 @@ const turnoSchema = new Schema({
   usuario: { type: mongoose.Types.ObjectId, required: false, ref: 'Usuario' },
 });
 
-module.exports = mongoose.model('Turno', turnoSchema);
+const Turno = mongoose.model('Turno', turnoSchema);
+
+module.exports = Turno;

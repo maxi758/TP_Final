@@ -9,7 +9,9 @@ const {
     getTurnosByPacienteId,
     createTurno,
     updateTurno,
+    asignTurno,
     cancelTurno,
+    cancelledTurnosByPatient,
     deleteTurno
     } = require('../controllers/turnos-controller');
 const auth = require('../middleware/auth');
@@ -26,7 +28,11 @@ router.post('/', (req, res, next) => auth('ADMIN', req, res, next) ,createTurno)
 
 router.patch('/:id', (req, res, next) => auth('ADMIN', req, res, next), updateTurno);
 
+router.patch('/:id/reservar', (req, res, next) => auth('PACIENTE', req, res, next), asignTurno);
+
 router.patch('/:id/cancelar', (req, res, next) => auth('PACIENTE', req, res, next), cancelTurno);
+
+router.get('/pacientes/:id/cancelados', (req, res, next) => auth('PACIENTE', req, res, next), cancelledTurnosByPatient);
 
 router.delete('/:id', (req, res, next) => auth('ADMIN', req, res, next), deleteTurno);
 

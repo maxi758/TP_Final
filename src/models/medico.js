@@ -14,4 +14,6 @@ const medicoSchema = new Schema({
   turnos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Turno' }],
 });
 
-module.exports = mongoose.model('Medico', medicoSchema);
+const Medico = mongoose.model('Medico', medicoSchema);
+
+module.exports = Medico;

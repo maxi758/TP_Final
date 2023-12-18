@@ -8,4 +8,6 @@ const especialidadSchema = new Schema({
   medicos: [{ type: mongoose.Types.ObjectId, required: false, ref: 'Medico' }], //revisar si relacion conviene aquí
 });
 
-module.exports = mongoose.model('Especialidad', especialidadSchema);
+const Especialidad = mongoose.model('Especialidad', especialidadSchema);
+
+module.exports = Especialidad;

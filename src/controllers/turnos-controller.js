@@ -77,9 +77,9 @@ const getTurnosByPacienteId = async (req, res, next) => {
 // Debería poder ser creado sin paciente asignado o con paciente asignado, eso varía el estado
 const createTurno = async (req, res, next) => {
   const { fecha, medico, observaciones } = req.body;
-  let estado, usuario;
+  let estado, usuario, medicoFound;
   try {
-    const medico = await Medico.findById(medico);
+    medicoFound = await Medico.findById(medico);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -88,16 +88,14 @@ const createTurno = async (req, res, next) => {
     return next(error);
   }
 
-  if (!medico) {
-    const error = new HttpError(
-      'No existe un medico con el id ingresado',
-      422
-    );
+  if (!medicoFound) {
+    const error = new HttpError('No existe un medico con el id ingresado', 422);
     return next(error);
   }
 
   if (req.body.paciente) {
     try {
+      console.log(req.body.paciente);
       usuario = await Usuario.findById(req.body.paciente);
     } catch (err) {
       const error = new HttpError(
@@ -118,7 +116,6 @@ const createTurno = async (req, res, next) => {
     estado = EstadoTurno.DISPONIBLE;
   }
 
-  console.log(req.body);
   const turno = new Turno({
     fecha,
     medico,
@@ -175,9 +172,47 @@ const updateTurno = async (req, res, next) => {
   res.status(200).json({ turno: turno.toObject({ getters: true }) });
 };
 
+const asignTurno = async (req, res, next) => {
+  const { tid, pid } = req.params;
+
+  let turno, paciente;
+  try {
+    turno = await Turno.findById(tid);
+    paciente = await Usuario.findById(pid);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  if (!turno) {
+    return next(new HttpError('No se encontró un turno para el id dado', 404));
+  }
+
+  if (!paciente) {
+    return next(new HttpError('No se encontró un paciente para el id dado', 404));
+  }
+
+  turno.usuario = paciente;
+  turno.estado = EstadoTurno.ASIGNADO;
+
+  try {  
+    await turno.save();  
+  } catch (err) {
+    const error = new HttpError(
+      'No se pudo actualizar el turno, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ turno });
+}
+
 const cancelTurno = async (req, res, next) => {
   const { id } = req.params;
-  const { estado } = req.body;
   let turno;
   try {
     turno = await Turno.findById(id);
@@ -193,10 +228,6 @@ const cancelTurno = async (req, res, next) => {
     return next(new HttpError('No se encontró un turno para el id dado', 404));
   }
 
-  console.log(turno.usuario);
-  console.log(req.usuario._id);
-  console.log(req.usuario.rol)
-  console.log(turno.usuario.equals(req.usuario._id));
   if (!turno.usuario.equals(req.usuario._id) && req.usuario.rol !== 'ADMIN') {
     const error = new HttpError(
       'No tiene permisos para cancelar este turno',
@@ -209,6 +240,7 @@ const cancelTurno = async (req, res, next) => {
 
   try {
     await turno.save();
+
   } catch (err) {
     const error = new HttpError(
       'No se pudo actualizar el turno, intente de nuevo más tarde',
@@ -218,6 +250,23 @@ const cancelTurno = async (req, res, next) => {
   }
 
   res.status(200).json({ turno: turno.toObject({ getters: true }) });
+};
+
+const cancelledTurnosByPatient = async (req, res, next) => {
+  const { id } = req.params;
+  let turnos;
+  try {
+    turnos = await Turno.find({ usuario: id, estado: EstadoTurno.CANCELADO });
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+  }
+  if (turnos.length === 0) {
+    return next(new HttpError('No se encontraron turnos', 404));
+  }
+  res.json({ turnos });
 };
 
 // Podría implementar cascada
@@ -242,6 +291,8 @@ module.exports = {
   getTurnosByPacienteId,
   createTurno,
   updateTurno,
+  asignTurno,
   cancelTurno,
+  cancelledTurnosByPatient,
   deleteTurno,
 };
