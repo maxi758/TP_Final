@@ -4,9 +4,13 @@ const HttpError = require('../models/http-error');
 const Medico = require('../models/medico');
 
 const getMedicos = async (req, res, next) => {
+  const { page = 1, limit = 10 } = req.query;
   let medicos;
   try {
-    medicos = await Medico.find().populate(['turnos', 'especialidad']);
+    medicos = await Medico.find()
+      .populate(['turnos', 'especialidad'])
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',

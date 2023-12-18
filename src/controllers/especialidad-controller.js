@@ -3,9 +3,12 @@ const HttpError = require('../models/http-error');
 const Especialidad = require('../models/especialidad');
 
 const getEspecialidades = async (req, res, next) => {
+  const { page = 1, limit = 10 } = req.query;
   let especialidades;
   try {
-    especialidades = await Especialidad.find();
+    especialidades = await Especialidad.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',

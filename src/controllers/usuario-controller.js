@@ -3,9 +3,10 @@ const Usuario = require('../models/usuario');
 const { Rol } = require('../utils/constantes');
 
 const getUsuarios = async (req, res, next) => {
+  const { page = 1, limit = 10 } = req.query;
   let usuarios;
   try {
-    usuarios = await Usuario.find();
+    usuarios = await Usuario.find().limit(limit * 1).skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',

@@ -4,12 +4,14 @@ const { EstadoTurno } = require('../utils/constantes');
 const Turno = require('../models/turno');
 const Medico = require('../models/medico');
 const Usuario = require('../models/usuario');
-const { default: mongoose } = require('mongoose');
 
 const getTurnos = async (req, res, next) => {
+  const { page = 1, limit = 10 } = req.query;
   let turnos;
   try {
-    turnos = await Turno.find();
+    turnos = await Turno.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -27,10 +29,28 @@ const getTurnos = async (req, res, next) => {
   });
 };
 
-const getTurnoById = async (req, res, next) => {};
+const getTurnoById = async (req, res, next) => {
+  const { id } = req.params;
+  let turno;
+  try {
+    turno = await Turno.findById(id);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+  }
+
+  if (!turno) {
+    return next(new HttpError('No se encontró un turno para el id dado', 404));
+  }
+
+  res.json({ turno });
+};
 
 const getTurnosByMedicoId = async (req, res, next) => {
   const { id } = req.params;
+  const { page = 1, limit = 10 } = req.query;
   let turnos;
   try {
     const medico = await Medico.findById(id);
@@ -41,7 +61,9 @@ const getTurnosByMedicoId = async (req, res, next) => {
       );
       return next(error);
     }
-    turnos = await Turno.find({ medico: id });
+    turnos = await Turno.find({ medico: id })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -54,6 +76,7 @@ const getTurnosByMedicoId = async (req, res, next) => {
 
 const getTurnosByPacienteId = async (req, res, next) => {
   const { id } = req.params;
+  const { page = 1, limit = 10 } = req.query;
   let turnos;
   try {
     const paciente = await Usuario.findById(id);
@@ -64,7 +87,9 @@ const getTurnosByPacienteId = async (req, res, next) => {
       );
       return next(error);
     }
-    turnos = await Turno.find({ usuario: id });
+    turnos = await Turno.find({ usuario: id })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -78,7 +103,13 @@ const getTurnosByPacienteId = async (req, res, next) => {
 // Debería poder ser creado sin paciente asignado o con paciente asignado, eso varía el estado
 const createTurno = async (req, res, next) => {
   const { fecha, medico, observaciones } = req.body;
-  let estado, usuario, medicoFound, existingTurnos, fechaAnterior, fechaPosterior, fechaActual;
+  let estado,
+    usuario,
+    medicoFound,
+    existingTurnos,
+    fechaAnterior,
+    fechaPosterior,
+    fechaActual;
   fechaActual = new Date(fecha);
   fechaAnterior = new Date(fecha);
   fechaAnterior.setMinutes(fechaAnterior.getMinutes() - 14);
@@ -86,7 +117,10 @@ const createTurno = async (req, res, next) => {
   fechaPosterior.setMinutes(fechaPosterior.getMinutes() + 14);
   try {
     medicoFound = await Medico.findById(medico);
-    existingTurnos = await Turno.find({ medico, fecha:{ $gte: fechaAnterior, $lte: fechaPosterior } });
+    existingTurnos = await Turno.find({
+      medico,
+      fecha: { $gte: fechaAnterior, $lte: fechaPosterior },
+    });
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -217,16 +251,18 @@ const asignTurno = async (req, res, next) => {
   }
 
   if (!paciente) {
-    return next(new HttpError('No se encontró un paciente para el id dado', 404));
+    return next(
+      new HttpError('No se encontró un paciente para el id dado', 404)
+    );
   }
 
   turno.usuario = paciente;
   turno.estado = EstadoTurno.ASIGNADO;
 
-  try {  
+  try {
     const session = await Turno.startSession();
     session.startTransaction();
-    await turno.save();  
+    await turno.save();
     paciente.turnos.push(turno);
     await paciente.save();
     await session.commitTransaction();
@@ -240,7 +276,7 @@ const asignTurno = async (req, res, next) => {
   }
 
   res.status(200).json({ turno });
-}
+};
 
 const cancelTurno = async (req, res, next) => {
   const { id } = req.params;
@@ -277,7 +313,6 @@ const cancelTurno = async (req, res, next) => {
     await turno.usuario.save();
     await session.commitTransaction();
     session.endSession();
-
   } catch (err) {
     const error = new HttpError(
       'No se pudo actualizar el turno, intente de nuevo más tarde',
@@ -314,7 +349,7 @@ const deleteTurno = async (req, res, next) => {
     turno = await Turno.findByIdAndDelete(id);
   } catch (err) {
     const error = new HttpError(
-      'Error en la consulta, intente de nuevo más tarde',
+      'No se ha podido eliminar el turno, intente de nuevo más tarde',
       500
     );
     next(error);
