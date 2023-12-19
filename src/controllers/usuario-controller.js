@@ -1,12 +1,15 @@
 const HttpError = require('../models/http-error');
 const Usuario = require('../models/usuario');
+const sendEmail = require('../services/email');
 const { Rol } = require('../utils/constantes');
 
 const getUsuarios = async (req, res, next) => {
   const { page = 1, limit = 10 } = req.query;
   let usuarios;
   try {
-    usuarios = await Usuario.find().limit(limit * 1).skip((page - 1) * limit);
+    usuarios = await Usuario.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -81,8 +84,66 @@ const login = async (req, res, next) => {
   }
 };
 
+const logout = async (req, res, next) => {
+  try {
+    req.usuario.tokens = req.usuario.tokens.filter(
+      (token) => token.token !== req.token
+    );
+    await req.usuario.save();
+    res.send('Ha cerrado la sesión exitosamente');
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+const logoutAll = async (req, res, next) => {
+  try {
+    req.usuario.tokens.splice(0, req.usuario.tokens.length);
+    await req.usuario.save();
+    res.send();
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+const recoverPassword = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const usuario = await Usuario.findOne({ email });
+    const token = await usuario.generateAuthToken();
+    await sendEmail(
+      email,
+      'Recuperación de contraseña',
+      `Hola, para recuperar tu contraseña ingresa al siguiente link: ${process.env.BACKEND_URL_USER}/reset-password
+      Token:${token}`
+    );
+    res.send('Se ha enviado un mail con las instrucciones para recuperar la contraseña');
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  const { email, password, repeatPassword } = req.body;
+  if (password !== repeatPassword) {
+    return res.status(400).send('Las contraseñas no coinciden');
+  }
+  try {
+    const usuario = await Usuario.findOne({ email });
+    usuario.password = password;
+    await usuario.save();
+    res.send('Contraseña actualizada exitosamente');
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
 module.exports = {
   getUsuarios,
   createUsuario,
   login,
+  logout,
+  logoutAll,
+  recoverPassword,
+  resetPassword,
 };
