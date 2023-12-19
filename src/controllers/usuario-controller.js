@@ -53,8 +53,6 @@ const createUsuario = async (req, res, next) => {
   console.log(usuario);
   try {
     await usuario.save();
-    //sendWelcomeEmail(usuario.email, usuario.name); // send welcome email
-    //const token = await usuario.generateAuthToken();
     res.status(201).json({ usuario });
   } catch (err) {
     console.log(err);
