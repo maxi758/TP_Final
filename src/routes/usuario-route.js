@@ -42,7 +42,7 @@ router.post(
 router.post(
   '/login',
   [
-    check('email', 'El formato de mail no es válido').isEmail(),
+    check('email', 'El formato de email no es válido').isEmail(),
     check(
       'password',
       'La contraseña debe tener entre 4 y 8 caracteres'
@@ -64,11 +64,27 @@ router.post(
   logoutAll
 );
 
-router.post('/email', recoverPassword);
+router.post(
+  '/email',
+  [check('email', 'El formato de email no es válido').isEmail(), validate],
+  recoverPassword
+);
 
 router.patch(
   '/reset-password',
   (req, res, next) => auth('PACIENTE', req, res, next),
+  [
+    check('email', 'El formato de email no es válido').isEmail(),
+    check(
+      'password',
+      'La contraseña debe tener entre 4 y 8 caracteres'
+    ).isLength({ min: 4, max: 8 }),
+    check(
+      'repeatPassword',
+      'La contraseña debe tener entre 4 y 8 caracteres'
+    ).isLength({ min: 4, max: 8 }),
+    validate,
+  ],
   resetPassword
 );
 
