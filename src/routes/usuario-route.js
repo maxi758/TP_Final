@@ -15,7 +15,6 @@ const {
 const auth = require('../middleware/auth');
 const { check, body } = require('express-validator');
 const { paginateValidator, validate } = require('../utils/validators');
-const { log } = require('make');
 
 router.get(
   '/',
@@ -67,7 +66,7 @@ router.post(
 
 router.post('/email', recoverPassword);
 
-router.post(
+router.patch(
   '/reset-password',
   (req, res, next) => auth('PACIENTE', req, res, next),
   resetPassword

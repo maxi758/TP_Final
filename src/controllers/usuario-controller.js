@@ -91,8 +91,12 @@ const logout = async (req, res, next) => {
     );
     await req.usuario.save();
     res.send('Ha cerrado la sesión exitosamente');
-  } catch (error) {
-    res.status(500).send(error);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
   }
 };
 
@@ -101,8 +105,12 @@ const logoutAll = async (req, res, next) => {
     req.usuario.tokens.splice(0, req.usuario.tokens.length);
     await req.usuario.save();
     res.send();
-  } catch (error) {
-    res.status(500).send(error);
+  } catch (err) {
+    const error = new HttpError(
+      'Error en la consulta, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
   }
 };
 
@@ -110,6 +118,10 @@ const recoverPassword = async (req, res, next) => {
   const { email } = req.body;
   try {
     const usuario = await Usuario.findOne({ email });
+    if (!usuario) {
+      return res.status(400).send('No se encontró un usuario con el email ingresado');
+    }
+    usuario.tokens = [];
     const token = await usuario.generateAuthToken();
     await sendEmail(
       email,
@@ -118,8 +130,12 @@ const recoverPassword = async (req, res, next) => {
       Token:${token}`
     );
     res.send('Se ha enviado un mail con las instrucciones para recuperar la contraseña');
-  } catch (error) {
-    res.status(500).send(error);
+  } catch (err) {
+    const error = new HttpError(
+      'No se pudo enviar el mail, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
   }
 };
 
@@ -130,11 +146,24 @@ const resetPassword = async (req, res, next) => {
   }
   try {
     const usuario = await Usuario.findOne({ email });
+    if (!usuario) {
+      return res.status(400).send('No se encontró un usuario con el email ingresado');
+    }
+    if (!usuario.tokens || usuario.tokens.length === 0) {
+      return res.status(400).send('No se encontró un token');
+    }
+    if (usuario.tokens[0].token !== req.body.token) {
+      return res.status(400).send('El token ingresado no es válido');
+    }
     usuario.password = password;
     await usuario.save();
     res.send('Contraseña actualizada exitosamente');
-  } catch (error) {
-    res.status(500).send(error);
+  } catch (err) {
+    const error = new HttpError(
+      'No se pudo actualizar la contraseña, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
   }
 };
 
