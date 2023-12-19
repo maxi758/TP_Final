@@ -4,7 +4,9 @@ const HttpError = require('../models/http-error');
 const validate = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log(errors.array());
       const error = new HttpError(
+        errors.array()[0].msg ||
         "Los datos ingresados no son válidos, verifique e intente nuevamente",
         422
       );

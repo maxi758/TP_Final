@@ -3,37 +3,93 @@ const express = require('express');
 const router = express.Router();
 
 const {
-    getTurnos,
-    getTurnoById,
-    getTurnosByMedicoId,
-    getTurnosByPacienteId,
-    createTurno,
-    updateTurno,
-    asignTurno,
-    cancelTurno,
-    cancelledTurnosByPatient,
-    deleteTurno
-    } = require('../controllers/turnos-controller');
+  getTurnos,
+  getTurnoById,
+  getTurnosByMedicoId,
+  getTurnosByPacienteId,
+  createTurno,
+  updateTurno,
+  asignTurno,
+  cancelTurno,
+  cancelledTurnosByPatient,
+  deleteTurno,
+} = require('../controllers/turnos-controller');
 const auth = require('../middleware/auth');
+const { check, body } = require('express-validator');
+const { paginateValidator, validate } = require('../utils/validators');
 
-router.get('/', getTurnos);
+router.get('/', [paginateValidator], getTurnos);
 
-router.get('/:id', getTurnoById);
+router.get('/:id', [check('id').isMongoId(), validate], getTurnoById);
 
-router.get('/medicos/:id', (req, res, next) => auth('ADMIN', req, res, next), getTurnosByMedicoId);
+router.get(
+  '/medicos/:id',
+  (req, res, next) => auth('ADMIN', req, res, next),
+  [check('id').isMongoId(), validate],
+  getTurnosByMedicoId
+);
 
-router.get('/pacientes/:id', getTurnosByPacienteId);
+router.get(
+  '/pacientes/:id',
+  [check('id').isMongoId(), validate],
+  getTurnosByPacienteId
+);
 
-router.post('/', (req, res, next) => auth('ADMIN', req, res, next) ,createTurno);
+router.post(
+  '/',
+  (req, res, next) => auth('ADMIN', req, res, next),
+  [
+    check('medico').isMongoId(),
+    check('paciente').isMongoId().optional(),
+    check('fecha')
+      .toDate()
+      .custom((value, { req }) => {
+        if (!value || value === '' || value === NaN) {
+          throw new Error('Debe ingresar una fecha válida');
+        }
+        if (value < new Date()) {
+          throw new Error('La fecha debe ser posterior a la fecha actual');
+        }
+        return true;
+      }),
 
-router.patch('/:id', (req, res, next) => auth('ADMIN', req, res, next), updateTurno);
+    validate,
+  ],
+  createTurno
+);
 
-router.patch('/:id/reservar', (req, res, next) => auth('PACIENTE', req, res, next), asignTurno);
+router.patch(
+  '/:id',
+  (req, res, next) => auth('ADMIN', req, res, next),
+  updateTurno
+);
 
-router.patch('/:id/cancelar', (req, res, next) => auth('PACIENTE', req, res, next), cancelTurno);
+router.patch(
+  '/:id/reservar',
+  (req, res, next) => auth('PACIENTE', req, res, next),
+  check('id').isMongoId(),
+  asignTurno
+);
 
-router.get('/pacientes/:id/cancelados', (req, res, next) => auth('PACIENTE', req, res, next), cancelledTurnosByPatient);
+router.patch(
+  '/:id/cancelar',
+  (req, res, next) => auth('PACIENTE', req, res, next),
+  check('id').isMongoId(),
+  cancelTurno
+);
 
-router.delete('/:id', (req, res, next) => auth('ADMIN', req, res, next), deleteTurno);
+router.get(
+  '/pacientes/:id/cancelados',
+  (req, res, next) => auth('PACIENTE', req, res, next),
+  check('id').isMongoId(),
+  cancelledTurnosByPatient
+);
+
+router.delete(
+  '/:id',
+  (req, res, next) => auth('ADMIN', req, res, next),
+  check('id').isMongoId(),
+  deleteTurno
+);
 
 module.exports = router;

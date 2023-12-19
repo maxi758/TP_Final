@@ -22,10 +22,13 @@ router.post(
   '/',
   [
     check('nombre').isLength({ min: 2 }),
-    check('apellido'),
-    check('dni'),
-    check('email').isEmail(),
-    check('password'),
+    check('apellido').isLength({ min: 2 }),
+    check('dni').isLength({ min: 7, max: 8 }),
+    check('email', 'El formato de mail no es válido').isEmail(),
+    check(
+      'password',
+      'La contraseña debe tener entre 4 y 8 caracteres'
+    ).isLength({ min: 4, max: 8 }),
     validate,
   ],
   createUsuario
@@ -33,7 +36,14 @@ router.post(
 
 router.post(
   '/login',
-  [check('email').isEmail(), check('password'), validate],
+  [
+    check('email', 'El formato de mail no es válido').isEmail(),
+    check(
+      'password',
+      'La contraseña debe tener entre 4 y 8 caracteres'
+    ).isLength({ min: 4, max: 8 }),
+    validate,
+  ],
   login
 );
 
