@@ -52,7 +52,7 @@ router.post(
         }
         return true;
       }),
-
+    check('observaciones').isLength({ min: 5 }),
     validate,
   ],
   createTurno
@@ -61,6 +61,11 @@ router.post(
 router.patch(
   '/:id',
   (req, res, next) => auth('ADMIN', req, res, next),
+  [
+    check('id').isMongoId(),
+    check('observaciones').isLength({ min: 5 }),
+    validate,
+  ],
   updateTurno
 );
 

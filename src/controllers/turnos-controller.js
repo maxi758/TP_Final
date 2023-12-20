@@ -200,7 +200,7 @@ const createTurno = async (req, res, next) => {
 // Cambia el estado del turno, puede ser
 const updateTurno = async (req, res, next) => {
   const { id } = req.params;
-  const { estado } = req.body;
+  const { observaciones } = req.body;
   let turno;
   try {
     turno = await Turno.findById(id);
@@ -216,7 +216,7 @@ const updateTurno = async (req, res, next) => {
     return next(new HttpError('No se encontró un turno para el id dado', 404));
   }
 
-  turno.estado = estado;
+  turno.observaciones = observaciones;
 
   try {
     await turno.save();
@@ -232,12 +232,12 @@ const updateTurno = async (req, res, next) => {
 };
 
 const asignTurno = async (req, res, next) => {
-  const { tid, pid } = req.params;
+  const { id } = req.params;
 
   let turno, paciente;
   try {
-    turno = await Turno.findById(tid);
-    paciente = await Usuario.findById(pid);
+    turno = await Turno.findById(id);
+    paciente = await Usuario.findById(req.usuario._id);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -256,15 +256,23 @@ const asignTurno = async (req, res, next) => {
     );
   }
 
+  if (turno.estado !== EstadoTurno.DISPONIBLE) {
+    const error = new HttpError(
+      'El turno no se encuentra disponible para asignar',
+      422
+    );
+    return next(error);
+  }
+
   turno.usuario = paciente;
   turno.estado = EstadoTurno.ASIGNADO;
 
   try {
     const session = await Turno.startSession();
     session.startTransaction();
-    await turno.save();
+    await turno.save({session});
     paciente.turnos.push(turno);
-    await paciente.save();
+    await paciente.save({session});
     await session.commitTransaction();
     session.endSession();
   } catch (err) {
@@ -275,14 +283,16 @@ const asignTurno = async (req, res, next) => {
     return next(error);
   }
 
+  console.log(turno);
   res.status(200).json({ turno });
 };
 
 const cancelTurno = async (req, res, next) => {
   const { id } = req.params;
-  let turno;
+  let turno, paciente;
   try {
     turno = await Turno.findById(id);
+    paciente = await Usuario.findById(req.usuario._id);
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -309,8 +319,8 @@ const cancelTurno = async (req, res, next) => {
     const session = await Turno.startSession();
     session.startTransaction();
     await turno.save();
-    turno.usuario.turnos.pull(turno);
-    await turno.usuario.save();
+    paciente.turnos.pull(turno);
+    await paciente.save();
     await session.commitTransaction();
     session.endSession();
   } catch (err) {

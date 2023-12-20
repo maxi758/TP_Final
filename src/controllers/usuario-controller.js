@@ -1,4 +1,3 @@
-const jtw = require('jsonwebtoken');
 const HttpError = require('../models/http-error');
 const Usuario = require('../models/usuario');
 const sendEmail = require('../services/email');
