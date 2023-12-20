@@ -1,6 +1,10 @@
+const jtw = require('jsonwebtoken');
 const HttpError = require('../models/http-error');
 const Usuario = require('../models/usuario');
 const sendEmail = require('../services/email');
+const jwt = require('jsonwebtoken');
+const util = require('util');
+const jwtVerify = util.promisify(jwt.verify);
 const { Rol } = require('../utils/constantes');
 
 const getUsuarios = async (req, res, next) => {
@@ -26,7 +30,7 @@ const getUsuarios = async (req, res, next) => {
 };
 
 const createUsuario = async (req, res, next) => {
-  const { email } = req.body;
+  const { email, nombre, apellido, dni, password, rol } = req.body;
 
   let existingUsuario;
 
@@ -48,7 +52,7 @@ const createUsuario = async (req, res, next) => {
     return next(error);
   }
 
-  const usuario = new Usuario({ ...req.body });
+  const usuario = new Usuario({ email, nombre, apellido, dni, password, rol });
 
   console.log(usuario);
   try {
@@ -117,7 +121,9 @@ const recoverPassword = async (req, res, next) => {
   try {
     const usuario = await Usuario.findOne({ email });
     if (!usuario) {
-      return res.status(400).send('No se encontró un usuario con el email ingresado');
+      return res
+        .status(400)
+        .send('No se encontró un usuario con el email ingresado');
     }
     usuario.tokens = [];
     const token = await usuario.generateAuthToken();
@@ -127,7 +133,9 @@ const recoverPassword = async (req, res, next) => {
       `Hola, para recuperar tu contraseña ingresa al siguiente link: ${process.env.BACKEND_URL_USER}/reset-password
       Token:${token}`
     );
-    res.send('Se ha enviado un mail con las instrucciones para recuperar la contraseña');
+    res.send(
+      'Se ha enviado un mail con las instrucciones para recuperar la contraseña'
+    );
   } catch (err) {
     const error = new HttpError(
       'No se pudo enviar el mail, intente de nuevo más tarde',
@@ -138,19 +146,29 @@ const recoverPassword = async (req, res, next) => {
 };
 
 const resetPassword = async (req, res, next) => {
-  const { email, password, repeatPassword } = req.body;
+  const { email, password, repeatPassword, key } = req.body;
+  try {
+    await jwtVerify(key, 'mysecret');
+  } catch (err) {
+    const error = new HttpError('El token ingresado no es válido', 500);
+    return next(error);
+  }
+
   if (password !== repeatPassword) {
     return res.status(400).send('Las contraseñas no coinciden');
   }
+
   try {
     const usuario = await Usuario.findOne({ email });
     if (!usuario) {
-      return res.status(400).send('No se encontró un usuario con el email ingresado');
+      return res
+        .status(400)
+        .send('No se encontró un usuario con el email ingresado');
     }
     if (!usuario.tokens || usuario.tokens.length === 0) {
       return res.status(400).send('No se encontró un token');
     }
-    if (usuario.tokens[0].token !== req.body.token) {
+    if (usuario.tokens[0].token !== key) {
       return res.status(400).send('El token ingresado no es válido');
     }
     usuario.password = password;

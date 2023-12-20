@@ -1,4 +1,4 @@
-const { validationResult } = require('express-validator');
+const { validationResult, body } = require('express-validator');
 const HttpError = require('../models/http-error');
 
 const validate = (req, res, next) => {
@@ -23,5 +23,13 @@ const validate = (req, res, next) => {
     }
     next();
   };
+
+const validateBodyKeys = (body, validKeys) => {
+  return body().custom(body => {
+    const keys = Object.keys(body);
+    return keys.every(key => validKeys.includes(key));
+  });
+}
+
   
-  module.exports = {validate, paginateValidator};
+  module.exports = {validate, paginateValidator, validateBodyKeys};
