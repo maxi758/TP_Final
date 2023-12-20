@@ -15,6 +15,16 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // * para que cualquier dominio pueda acceder a la api
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization" // los headers que se pueden usar
+  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE"); // los metodos http que se pueden usar
+  next();
+});
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
