@@ -1,3 +1,4 @@
+const Especialidad = require('../models/especialidad');
 const especialidad = require('../models/especialidad');
 const HttpError = require('../models/http-error');
 
@@ -49,12 +50,16 @@ const getMedicoById = async (req, res, next) => {
 //Admin
 const createMedico = async (req, res, next) => {
   console.log(req.body);
+  const { nombre, apellido, matricula, especialidad } = req.body;
   const medico = new Medico({
-    ...req.body,
+    nombre,
+    apellido,
+    matricula,
+    especialidad,
   });
   console.log(medico);
   try {
-    const existingEspecialidad = await especialidad.findById(
+    const existingEspecialidad = await Especialidad.findById(
       medico.especialidad
     );
 
@@ -78,6 +83,7 @@ const createMedico = async (req, res, next) => {
     await session.commitTransaction();
     session.endSession();
   } catch (err) {
+    console.log(err);
     const error = new HttpError(
       'No se pudo crear el médico, intente de nuevo más tarde',
       500
@@ -124,9 +130,49 @@ const updateMedico = async (req, res, next) => {
   res.json({ medico });
 };
 
+const deleteMedico = async (req, res, next) => {
+  const { id } = req.params;
+  console.log(id);
+  let medico, especialidad;
+  try {
+    medico = await Medico.findById(id);
+  } catch (err) {
+    const error = new HttpError(
+      'No se pudo eliminar el médico, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  if (!medico) {
+    return next(new HttpError('No se encontró un médico para el id dado', 404));
+  }
+
+  try {
+    especialidad = await Especialidad.findById(medico.especialidad);
+    const session = await Medico.startSession(); // Transaccion
+    session.startTransaction();
+    await medico.deleteOne();
+    especialidad.medicos.pull(medico);
+    await especialidad.save();
+    await session.commitTransaction();
+    session.endSession();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      'No se pudo eliminar el médico, intente de nuevo más tarde',
+      500
+    );
+    return next(error);
+  }
+
+  res.json({ message: 'Médico eliminado' });
+}
+
 module.exports = {
   getMedicos,
   getMedicoById,
   createMedico,
   updateMedico,
+  deleteMedico,
 };
