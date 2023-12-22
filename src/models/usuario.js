@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-
+const HttpError = require('../models/http-error');
 const Schema = mongoose.Schema;
 
 const usuarioSchema = new Schema(
@@ -59,13 +59,13 @@ usuarioSchema.statics.findByCredentials = async (email, password) => {
   const usuario = await Usuario.findOne({ email });
 
   if (!usuario) {
-    throw new Error('Error al iniciar sesión');
+    throw new HttpError('Error al iniciar sesión', 401);
   }
 
   const isMatch = await bcrypt.compare(password, usuario.password); 
 
   if (!isMatch) {
-    throw new Error('Error al iniciar sesión');
+    throw new HttpError('Error al iniciar sesión', 401);
   }
 
   return usuario;
