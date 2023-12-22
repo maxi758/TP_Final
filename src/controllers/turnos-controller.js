@@ -354,15 +354,35 @@ const cancelledTurnosByPatient = async (req, res, next) => {
 // Podría implementar cascada
 const deleteTurno = async (req, res, next) => {
   const { id } = req.params;
-  let turno;
+  let turno, medico;
   try {
-    turno = await Turno.findByIdAndDelete(id);
+    turno = await Turno.findById(id);
+    medico = await Medico.findById(turno.medico);
+    if (!turno) {
+      return next(new HttpError('No se encontró un turno para el id dado', 404));
+    }
+    if (turno.estado !== EstadoTurno.DISPONIBLE) {
+      const error = new HttpError(
+        'No se puede eliminar un turno asignado',
+        422
+      );
+      return next(error);
+    }
+    const session = await Turno.startSession();
+    session.startTransaction();
+    await turno.deleteOne();
+    medico.turnos.pull(turno);
+    await medico.save();
+    await session.commitTransaction();
+    session.endSession();
+
   } catch (err) {
+    console.log(err);
     const error = new HttpError(
       'No se ha podido eliminar el turno, intente de nuevo más tarde',
       500
     );
-    next(error);
+    return next(error);
   }
   res.status(200).json({ message: 'Turno eliminado' });
 };
