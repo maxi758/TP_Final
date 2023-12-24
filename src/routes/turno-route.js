@@ -18,9 +18,19 @@ const auth = require('../middleware/auth');
 const { check, body } = require('express-validator');
 const { paginateValidator, validate } = require('../utils/validators');
 
-router.get('/', [paginateValidator], getTurnos);
+router.get(
+  '/',
+  (req, res, next) => auth(['ADMIN', 'PACIENTE'], req, res, next),
+  [paginateValidator],
+  getTurnos
+);
 
-router.get('/:id', [check('id').isMongoId(), validate], getTurnoById);
+router.get(
+  '/:id',
+  (req, res, next) => auth(['ADMIN', 'PACIENTE'], req, res, next),
+  [check('id').isMongoId(), validate],
+  getTurnoById
+);
 
 router.get(
   '/medicos/:id',
@@ -31,6 +41,7 @@ router.get(
 
 router.get(
   '/pacientes/:id',
+  (req, res, next) => auth(['ADMIN', 'PACIENTE'], req, res, next),
   [check('id').isMongoId(), validate],
   getTurnosByPacienteId
 );

@@ -2,13 +2,13 @@ const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuario');
 const HttpError = require('../models/http-error');
 
-const auth = async (rol, req, res, next) => {
+const auth = async (roles, req, res, next) => {
   try {
     if (!req.header('Authorization')) {
       return next(new HttpError('Token faltante', 401));
     }
 
-    console.log(rol);
+    console.log(roles);
     console.log(req.header('Authorization'));
     const token = req.header('Authorization').replace('Bearer ', ''); // remove 'Bearer ' from token string
     const decoded = jwt.verify(token, 'mysecret'); // decode token
@@ -24,7 +24,13 @@ const auth = async (rol, req, res, next) => {
 
     console.log(usuario.rol);
 
-    if (rol !== usuario.rol && usuario.rol !== 'ADMIN') {
+    // Para que roles pueda ser un string o un array (si es un string, lo convierte en un array). 
+    // De esta forma, si se pasa un solo rol, no hay que pasar un array con un solo elemento
+    if (!Array.isArray(roles)) {
+      roles = [roles];
+    }
+
+    if (!roles.includes(usuario.rol)) {
       return next(
         new HttpError('No tiene permisos para realizar esta acción', 403)
       );

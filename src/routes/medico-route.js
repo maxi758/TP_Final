@@ -7,24 +7,39 @@ const {
   getMedicoById,
   createMedico,
   updateMedico,
-  deleteMedico
+  deleteMedico,
 } = require('../controllers/medicos-controller');
 const auth = require('../middleware/auth');
 const { check, body } = require('express-validator');
 const { paginateValidator, validate } = require('../utils/validators');
 
-router.get('/', [paginateValidator], getMedicos);
+router.get(
+  '/',
+  (req, res, next) => auth(['ADMIN', 'PACIENTE'], req, res, next),
+  [paginateValidator],
+  getMedicos
+);
 
-router.get('/:id', [check('id').isMongoId(), validate], getMedicoById);
+router.get(
+  '/:id',
+  (req, res, next) => auth(['ADMIN', 'PACIENTE'], req, res, next),
+  [check('id').isMongoId(), validate],
+  getMedicoById
+);
 
 router.post(
   '/',
   (req, res, next) => auth('ADMIN', req, res, next),
   [
-    check('nombre').isLength({ min: 2 }),
-    check('apellido').isLength({ min: 2 }),
-    check('matricula').isInt({ min: 1 }),
-    check('especialidad').isMongoId(),
+    check('nombre', 'El nombre debe tener como mínimo 2 caracteres').isLength({
+      min: 2,
+    }),
+    check(
+      'apellido',
+      'El apellido debe tener como mínimo 2 caracteres'
+    ).isLength({ min: 2 }),
+    check('matricula', 'Valor incorrecto').isInt({ min: 1 }),
+    check('especialidad', 'Ingrese un id válido').isMongoId(),
     validate,
   ],
   createMedico
@@ -35,18 +50,22 @@ router.patch(
   (req, res, next) => auth('ADMIN', req, res, next),
   [
     check('id').isMongoId(),
-    check('nombre').isLength({ min: 2 }).optional(),
-    check('apellido').isLength({ min: 2 }).optional(),
-    check('matricula').isInt({ min: 1 }).optional(),
-    check('especialidad').isMongoId().optional(),
+    check('nombre', 'El nombre debe tener como mínimo 2 caracteres')
+      .isLength({ min: 2 })
+      .optional(),
+    check('apellido', 'El apellido debe tener como mínimo 2 caracteres')
+      .isLength({ min: 2 })
+      .optional(),
+    check('matricula', 'Valor incorrecto').isInt({ min: 1 }).optional(),
+    check('especialidad', 'Ingrese un id válido').isMongoId().optional(),
     body().custom((value, { req }) => {
       if (Object.keys(req.body).length === 0) {
-        throw new Error("Request body is empty");
+        throw new Error('Request body is empty');
       }
       return true;
     }),
     validate,
-  ], 
+  ],
   updateMedico
 );
 

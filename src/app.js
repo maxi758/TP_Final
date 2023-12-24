@@ -46,8 +46,8 @@ app.use((error, req, res, next) => {
   if (res.headerSent) {
     return next(error);
   }
-  res.status(error.code || 500);
-  res.json({ message: error.message || 'An unknow error has ocurred' });
+  //res.status(error.code || 500);
+  res.status(error.code || 500).json({ message: error.message || 'An unknow error has ocurred' });
 });
 
 mongoose

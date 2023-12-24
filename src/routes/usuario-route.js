@@ -22,7 +22,7 @@ const {
 
 router.get(
   '/',
-  /*(req, res, next) => auth('ADMIN', req, res, next),*/
+  (req, res, next) => auth('ADMIN', req, res, next),
   [paginateValidator],
   getUsuarios
 );
