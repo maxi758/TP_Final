@@ -12,20 +12,48 @@
 				{
 					"name": "getAll",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
 						"method": "GET",
 						"header": [],
-						"url": "localhost:5000/api/especialidades"
+						"url": {
+							"raw": "localhost:5000/api/especialidades?limit=5",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"especialidades"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5"
+								}
+							]
+						}
 					},
 					"response": []
 				},
 				{
 					"name": "Create",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Alergiologia\",\r\n    \"descripcion\": \"Tratamiento de alergias\"\r\n}",
+							"raw": "{\r\n    \"nombre\": \"Ortopedia\",\r\n    \"descripcion\": \"Tratamiento de los huesos\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -44,6 +72,12 @@
 				{
 					"name": "getAll",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -69,6 +103,12 @@
 				{
 					"name": "getById",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
 						"method": "GET",
 						"header": [],
 						"url": "localhost:5000/api/medicos/657991ae074e8fa701771514"
@@ -81,14 +121,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMjkwNTgyOSwiZXhwIjoxNzAyOTI3NDI5fQ.Rz6po0sx81KeK9UctX13ZkdnB2hEabkgGf5xqH-bbLU"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"imuis\",\r\n    \"apellido\": \"Gilrt\",\r\n    \"matricula\": \"2\",\r\n    \"especialidad\": \"6578a8f51f16686db9b5abf4\"\r\n}",
+							"raw": "{\r\n    \"nombre\": \"hector\",\r\n    \"apellido\": \"larrea\",\r\n    \"matricula\": \"56560\",\r\n    \"especialidad\": \"6578a8f51f16686db9b5abf4\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -105,14 +145,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMzA0MDEzMCwiZXhwIjoxNzAzMDYxNzMwfQ.cuAQN7duBCDQ-hhzN0VY4sy38bE0Uwp1gLspA_G8Aag"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Maxi\",\r\n    \"especialidad\": \"65805fd4a711592cfb5b01d4\"\r\n}",
+							"raw": "{\r\n    \"nombre\": \"Maxim\",\r\n    \"especialidad\": \"65805fd4a711592cfb5b01d4\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -120,6 +160,21 @@
 							}
 						},
 						"url": "localhost:5000/api/medicos/657991ae074e8fa701771514"
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "localhost:5000/api/medicos/658ac62888e69e5e2b2a49e4"
 					},
 					"response": []
 				}
@@ -131,6 +186,12 @@
 				{
 					"name": "getAll",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
 						"method": "GET",
 						"header": [],
 						"url": "localhost:5000/api/turnos"
@@ -143,14 +204,14 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMzA3ODgzNywiZXhwIjoxNzAzMTAwNDM3fQ.daxgrJEBnKGQBapjlJG37wQDB4k4-3Op4Mq6TpEv1sY"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"fecha\": \"2024-02-02T17:16:00Z\",\r\n    \"observaciones\": \"ninguna\",\r\n    \"medico\": \"657991ae074e8fa701771514\"\r\n    \r\n}",
+							"raw": "{\r\n    \"fecha\": \"2024-02-05T17:16:00Z\",\r\n    \"observaciones\": \"ninguna\",\r\n    \"medico\": \"658a592593f159878afd2cca\"\r\n    \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -167,7 +228,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMzA3ODgzNywiZXhwIjoxNzAzMTAwNDM3fQ.daxgrJEBnKGQBapjlJG37wQDB4k4-3Op4Mq6TpEv1sY"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "GET",
@@ -197,21 +258,21 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMzA3ODgzNywiZXhwIjoxNzAzMTAwNDM3fQ.daxgrJEBnKGQBapjlJG37wQDB4k4-3Op4Mq6TpEv1sY"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "PATCH",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"observaciones\": \"Editado\"\r\n}",
+							"raw": "{\r\n    \"observaciones\": \"Editado 3\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "localhost:5000/api/turnos/65804be8c4c03fbc89e94a55"
+						"url": "localhost:5000/api/turnos/658a51f193f159878afd298a"
 					},
 					"response": []
 				},
@@ -221,12 +282,12 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMzA3ODgzNywiZXhwIjoxNzAzMTAwNDM3fQ.daxgrJEBnKGQBapjlJG37wQDB4k4-3Op4Mq6TpEv1sY"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "DELETE",
 						"header": [],
-						"url": "localhost:5000/api/turnos/6579b93ee6d2ad929329cca3"
+						"url": "localhost:5000/api/turnos/658ac70c88e69e5e2b2a4b0e"
 					},
 					"response": []
 				},
@@ -236,7 +297,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdhOWJmMzk2ZjcwODczZDIzMTFkN2IiLCJyb2wiOiJQQUNJRU5URSIsImlhdCI6MTcwMzA4MDAyMywiZXhwIjoxNzAzMTAxNjIzfQ.wWudvYuHo4qA913M5u26ha-3q3KMCfPxEVgiGhz82qA"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "GET",
@@ -251,7 +312,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdhOWJmMzk2ZjcwODczZDIzMTFkN2IiLCJyb2wiOiJQQUNJRU5URSIsImlhdCI6MTcwMzA4MDAyMywiZXhwIjoxNzAzMTAxNjIzfQ.wWudvYuHo4qA913M5u26ha-3q3KMCfPxEVgiGhz82qA"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "PATCH",
@@ -266,7 +327,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdhOWJmMzk2ZjcwODczZDIzMTFkN2IiLCJyb2wiOiJQQUNJRU5URSIsImlhdCI6MTcwMzA4MDAyMywiZXhwIjoxNzAzMTAxNjIzfQ.wWudvYuHo4qA913M5u26ha-3q3KMCfPxEVgiGhz82qA"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "GET",
@@ -286,12 +347,28 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdiM2RlZjk4NmZkMmU2MDE2ZjVlNDkiLCJyb2wiOiJBRE1JTiIsImlhdCI6MTcwMjY0OTE0NSwiZXhwIjoxNzAyNjcwNzQ1fQ._6CB8jc_WhbHviwNxKxqi-C4oIvnReD7AVdv5tyzbo0"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "GET",
 						"header": [],
-						"url": "localhost:5000/api/usuarios"
+						"url": {
+							"raw": "localhost:5000/api/usuarios?limit=20",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"usuarios"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
 					},
 					"response": []
 				},
@@ -345,6 +422,21 @@
 				},
 				{
 					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (responseCode.code === 200) {\r",
+									"    var jsonData = JSON.parse(responseBody);\r",
+									"    pm.collectionVariables.set(\"acessToken\", jsonData.token)\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -367,7 +459,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTdhOWJmMzk2ZjcwODczZDIzMTFkN2IiLCJyb2wiOiJQYWNpZW50ZSIsImlhdCI6MTcwMjk4ODM0NywiZXhwIjoxNzAzMDA5OTQ3fQ.o8XZvuBBcpDMyWo0t2l5MGQWyA5a6F2V0C4hoOSPnKg"
+								"token": "{{acessToken}}"
 							}
 						},
 						"method": "POST",
@@ -379,6 +471,12 @@
 				{
 					"name": "logout",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{acessToken}}"
+							}
+						},
 						"method": "POST",
 						"header": [],
 						"url": "localhost:5000/api/usuarios/logout"
@@ -428,6 +526,12 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "acessToken",
+			"value": ""
 		}
 	]
 }
