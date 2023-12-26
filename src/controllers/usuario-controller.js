@@ -132,9 +132,10 @@ const recoverPassword = async (req, res, next) => {
       `Hola, para recuperar tu contraseña ingresa al siguiente link: ${process.env.BACKEND_URL_USER}/reset-password
       Token:${token}`
     );
-    res.send(
-      'Se ha enviado un mail con las instrucciones para recuperar la contraseña'
-    );
+    res.json({
+      message:
+        'Se ha enviado un mail con las instrucciones para recuperar la contraseña',
+    });
   } catch (err) {
     const error = new HttpError(
       'No se pudo enviar el mail, intente de nuevo más tarde',
@@ -172,7 +173,7 @@ const resetPassword = async (req, res, next) => {
     }
     usuario.password = password;
     await usuario.save();
-    res.send('Contraseña actualizada exitosamente');
+    res.json({ message: 'Se ha actualizado la contraseña exitosamente' });
   } catch (err) {
     const error = new HttpError(
       'No se pudo actualizar la contraseña, intente de nuevo más tarde',
