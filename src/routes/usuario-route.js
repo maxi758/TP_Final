@@ -60,7 +60,11 @@ router.post(
       'password',
       'La contraseña debe tener entre 4 y 8 caracteres'
     ).isLength({ min: 4, max: 8 }),
-    check('rol').isIn(['ADMIN', 'PACIENTE']),
+    //check('rol').isIn(['ADMIN', 'PACIENTE']),
+    (req, res, next) => {
+      req.body.rol = 'ADMIN'; // setear el rol del usuario
+      next();
+    },
     validateBodyKeys(body,['nombre', 'apellido', 'dni', 'email', 'password', 'rol']),
     validate,
   ],
