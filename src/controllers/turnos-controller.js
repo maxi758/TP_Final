@@ -12,7 +12,8 @@ const getTurnos = async (req, res, next) => {
     turnos = await Turno.find({estado: EstadoTurno.DISPONIBLE })
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .populate('medico');
+      .populate('medico')
+      .sort('fecha');
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
