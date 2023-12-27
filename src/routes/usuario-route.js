@@ -86,13 +86,13 @@ router.post(
 
 router.post(
   '/logout',
-  (req, res, next) => auth('PACIENTE', req, res, next),
+  (req, res, next) => auth(['ADMIN','PACIENTE'], req, res, next),
   logout
 );
 
 router.post(
   '/logoutAll',
-  (req, res, next) => auth('PACIENTE', req, res, next),
+  (req, res, next) => auth(['ADMIN','PACIENTE'], req, res, next),
   logoutAll
 );
 
