@@ -78,7 +78,9 @@ const getTurnosByMedicoId = async (req, res, next) => {
 
 const getTurnosByPacienteId = async (req, res, next) => {
   const { id } = req.params;
+  const {estado} = req.query;
   const { page = 1, limit = 10 } = req.query;
+  console.log(estado);
   let turnos;
   try {
     const paciente = await Usuario.findById(id);
@@ -89,9 +91,10 @@ const getTurnosByPacienteId = async (req, res, next) => {
       );
       return next(error);
     }
-    turnos = await Turno.find({ usuario: id })
+    turnos = await Turno.find({ usuario: id, estado })
       .limit(limit * 1)
-      .skip((page - 1) * limit);
+      .skip((page - 1) * limit)
+      .populate('medico');
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
