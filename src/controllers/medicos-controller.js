@@ -92,7 +92,8 @@ const createMedico = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ medico: medico.toObject({ getters: true }) });
+  const populatedMedico = await Medico.findById(medico._id).populate('especialidad');
+  res.status(201).json({ medico: populatedMedico.toObject({ getters: true }) });
 };
 
 //Admin
