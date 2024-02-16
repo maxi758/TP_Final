@@ -129,8 +129,7 @@ const recoverPassword = async (req, res, next) => {
     await sendEmail(
       email,
       'Recuperación de contraseña',
-      `Hola, para recuperar tu contraseña ingresa al siguiente link: ${process.env.BACKEND_URL_USER}/reset-password
-      Token:${token}`
+      `Hola, para recuperar tu contraseña ingresa al siguiente link: ${process.env.FRONTEND_URL}/auth/recover-password?key=${token} \n`
     );
     res.json({
       message:

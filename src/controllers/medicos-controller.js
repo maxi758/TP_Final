@@ -39,6 +39,7 @@ const getMedicoById = async (req, res, next) => {
       'Error en la consulta, intente de nuevo más tarde',
       500
     );
+    return next(error);
   }
 
   if (!medico) {

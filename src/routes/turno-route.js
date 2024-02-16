@@ -34,7 +34,7 @@ router.get(
 
 router.get(
   '/medicos/:id',
-  (req, res, next) => auth('ADMIN', req, res, next),
+  (req, res, next) => auth(['ADMIN', 'PACIENTE'], req, res, next),
   [check('id').isMongoId(), validate],
   getTurnosByMedicoId
 );
