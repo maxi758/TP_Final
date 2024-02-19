@@ -17,8 +17,8 @@ const getEspecialidades = async (req, res, next) => {
     return next(error);
   }
 
-  if (!especialidades || especialidades.length === 0) {
-    return next(new HttpError('No se encontraron especialidades', 404));
+  if (!especialidades) {
+    return next(new HttpError('No se encontraron resultados', 404));
   }
 
   res.json({

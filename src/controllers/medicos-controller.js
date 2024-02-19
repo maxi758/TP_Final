@@ -20,12 +20,15 @@ const getMedicos = async (req, res, next) => {
     return next(error);
   }
 
-  if (!medicos || medicos.length === 0) {
-    return next(new HttpError('No se encontraron médicos', 404));
+  if (!medicos) {
+    return next(new HttpError('No se encontraron resultados', 404));
   }
 
+  let total = await Medico.countDocuments();
   res.json({
     medicos: medicos.map((medico) => medico.toObject({ getters: true })),
+    total,
+    totalPages: Math.ceil(total / limit),
   });
 };
 
@@ -33,7 +36,10 @@ const getMedicoById = async (req, res, next) => {
   const { id } = req.params;
   let medico;
   try {
-    medico = await Medico.findById(id).populate({path: 'turnos', match: {estado: 'DISPONIBLE'}});
+    medico = await Medico.findById(id).populate({
+      path: 'turnos',
+      match: { estado: 'DISPONIBLE' },
+    });
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
@@ -92,7 +98,9 @@ const createMedico = async (req, res, next) => {
     return next(error);
   }
 
-  const populatedMedico = await Medico.findById(medico._id).populate('especialidad');
+  const populatedMedico = await Medico.findById(medico._id).populate(
+    'especialidad'
+  );
   res.status(201).json({ medico: populatedMedico.toObject({ getters: true }) });
 };
 
@@ -149,12 +157,11 @@ const deleteMedico = async (req, res, next) => {
   if (!medico) {
     return next(new HttpError('No se encontró un médico para el id dado', 404));
   }
-
   try {
     especialidad = await Especialidad.findById(medico.especialidad);
     const session = await Medico.startSession(); // Transaccion
     session.startTransaction();
-    await medico.deleteOne();
+    await Medico.findOneAndDelete(id);
     especialidad.medicos.pull(medico);
     await especialidad.save();
     await session.commitTransaction();
@@ -169,7 +176,7 @@ const deleteMedico = async (req, res, next) => {
   }
 
   res.json({ message: 'Médico eliminado' });
-}
+};
 
 module.exports = {
   getMedicos,

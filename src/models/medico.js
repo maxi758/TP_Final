@@ -16,15 +16,21 @@ const medicoSchema = new Schema({
 
 // elimina los turnos de un medico cuando se elimina el medico
 
-medicoSchema.pre('deleteOne', async function (next) {
+medicoSchema.pre('findOneAndDelete', async function (next) {
   try {
-    await Turno.deleteMany({ medico: this._id });
+    const medicoToDelete = await this.model.findOne(this.getQuery());
+    if (!medicoToDelete) {
+      return next(new Error('No se encontró el medico a eliminar'));
+    }
+    console.log(medicoToDelete);
+    await Turno.deleteMany({ medico: medicoToDelete._id });
     next();
   } catch (err) {
     const error = new HttpError(
       'Error en la consulta, intente de nuevo más tarde',
       500
     );
+    console.log(err);
     return next(error);
   }
 });

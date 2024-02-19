@@ -8,6 +8,7 @@ const Usuario = require('../models/usuario');
 const getTurnos = async (req, res, next) => {
   const { page = 1, limit = 10 } = req.query;
   let turnos;
+  let total=0;
   let fechaActual = new Date();
   try {
     turnos = await Turno.find({
@@ -26,10 +27,11 @@ const getTurnos = async (req, res, next) => {
     return next(error);
   }
 
-  if (!turnos || turnos.length === 0) {
-    return next(new HttpError('No se encontraron turnos', 404));
+  if (!turnos) {
+    return next(new HttpError('No se encontraron resultados', 404));
   }
-  let total = await Turno.countDocuments({
+
+  total = await Turno.countDocuments({
     estado: EstadoTurno.DISPONIBLE,
     fecha: { $gte: fechaActual },
   });
